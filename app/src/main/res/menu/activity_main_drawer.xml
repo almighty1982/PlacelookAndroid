@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/ic_logout"
+            android:title="@string/logout" />
+        <item
+            android:id="@+id/operator"
+            android:icon="@drawable/ic_operator"
+            android:title="@string/want_oper" />
+        <item
+            android:id="@+id/balance"
+            android:icon="@drawable/ic_account_balance"
+            android:title="@string/balanse_stat" />
+        <item
+            android:id="@+id/buy_minutes"
+            android:icon="@drawable/ic_attach_money"
+            android:title="@string/buy_minutes" />
+        <item
+            android:id="@+id/earn_minutes"
+            android:icon="@drawable/ic_earn_minutes"
+            android:title="@string/earn_minutes" />
+
+    </group>
+
+    <item android:title="Albums">
+        <menu>
+            <item
+                android:id="@+id/saved_albums"
+                android:icon="@drawable/ic_saved_album"
+                android:title="@string/saved_albums" />
+        </menu>
+    </item>
+
+</menu>

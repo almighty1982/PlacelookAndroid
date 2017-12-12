@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">Placelook</string>
+    <string name="api_key">AIzaSyCenwHbY0Q3uKhoY7TJa1rka2haZXtD0w0</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="want_oper">I want to be operator</string>
+    <string name="balanse_stat">Balance sheet statistics</string>
+    <string name="buy_minutes">Buy minutes</string>
+    <string name="earn_minutes">Earn minutes</string>
+    <string name="saved_albums">Saved albums</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="sign_up">SIGN UP</string>
+    <string name="log_in">LOG IN</string>
+    <string name="or">OR</string>
+    <string name="cont_gp">Continue with Google</string>
+    <string name="cont_fb">Continue with Facebook</string>
+    <string name="cont_tw">Continue with Twitter</string>
+    <string name="cont_vk">Continue with VKontakte</string>
+    <string name="any">We will never post anything without your permission</string>
+    <string name="title_activity_login">Login</string>
+    <string name="hithEmail">e-mail</string>
+    <string name="hithPassword">password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="connect">CONNECT</string>
+    <string name="viaGooglePlus">via Google+</string>
+    <string name="viaFacebook">via Facebook</string>
+    <string name="viaTwitter">via Twitter</string>
+    <string name="viaVKontakte">via VKontakte</string>
+
+
+    <string name="pleaseTurnOnGPS">Please, turn on GPS</string>
+    <string name="whereareyou">Where are you?</string>
+    <string name="big_start">START</string>
+    <string name="please_enter_name">Please enter the tour name</string>
+
+</resources>

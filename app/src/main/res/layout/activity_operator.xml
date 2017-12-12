@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:padding="2dp"
+    tools:context="com.placelook.OperatorActivity">
+
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vpOperator"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </android.support.v4.view.ViewPager>
+
+    <!--
+        <RelativeLayout
+            android:id="@+id/frOperatorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </RelativeLayout>
+    -->
+
+</android.support.constraint.ConstraintLayout>
