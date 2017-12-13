@@ -1,37 +1,49 @@
 package com.placelook.camera;
 
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.util.Log;
+
+import com.placelook.util.Parameter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 public class AvcEncoder extends Encoder {
-
+    private static final String TAG = AvcEncoder.class.getSimpleName();
     private EncodedFrameListener frameListener;
     private MediaCodec mediaCodec;
 
     private byte[] sps;
     private byte[] pps;
     private ParameterSetsListener parameterSetsListener;
+    private ByteBuffer[] inputBuffers;
+    private ByteBuffer[] outputBuffers;
 
     public AvcEncoder() {
+        super();
+    }
 
+    public AvcEncoder(ArrayList<Parameter> list) {
+        super(list);
     }
 
     public boolean open() {
         try {
-            mediaCodec = MediaCodec.createEncoderByType("video/avc");
-            MediaFormat mediaFormat = MediaFormat.createVideoFormat("video/avc", 320, 240);
-            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 125000);
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15);
-            mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
-            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+            mediaCodec = MediaCodec.createEncoderByType(getStringParameter(MediaFormat.KEY_MIME));
+            MediaFormat mediaFormat = MediaFormat.createVideoFormat(getStringParameter(MediaFormat.KEY_MIME), getIntParameter(MediaFormat.KEY_WIDTH), getIntParameter(MediaFormat.KEY_HEIGHT));
+            mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, getIntParameter(MediaFormat.KEY_BIT_RATE));
+            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, getIntParameter(MediaFormat.KEY_FRAME_RATE));
+            mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, getIntParameter(MediaFormat.KEY_COLOR_FORMAT));
+            mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, getIntParameter(MediaFormat.KEY_I_FRAME_INTERVAL));
             mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             return true;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (UndefinedImportantParameterException ex) {
+            ex.printStackTrace();
+            return false;
+        } catch (IOException ex) {
+            ex.printStackTrace();
             return false;
         }
     }
@@ -39,14 +51,14 @@ public class AvcEncoder extends Encoder {
     @Override
     public boolean start() {
         mediaCodec.start();
+        inputBuffers = mediaCodec.getInputBuffers();
+        outputBuffers = mediaCodec.getOutputBuffers();
         return true;
     }
 
     @Override
     public void encode(byte[] input) {
         try {
-            ByteBuffer[] inputBuffers = mediaCodec.getInputBuffers();
-            ByteBuffer[] outputBuffers = mediaCodec.getOutputBuffers();
             int inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
             if (inputBufferIndex >= 0) {
                 ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
@@ -64,13 +76,15 @@ public class AvcEncoder extends Encoder {
                 if (sps != null && pps != null) {
                     ByteBuffer frameBuffer = ByteBuffer.wrap(outData);
                     frameBuffer.putInt(bufferInfo.size - 4);
-                    frameListener.onEncoded(outData, 0, outData.length);
+                    if (null != frameListener) {
+                        frameListener.onEncoded(outData, 0, outData.length);
+                    }
                 } else {
                     ByteBuffer spsPpsBuffer = ByteBuffer.wrap(outData);
                     if (spsPpsBuffer.getInt() == 0x00000001) {
-                        System.out.println("parsing sps/pps");
+                        Log.i(TAG, "parsing sps/pps");
                     } else {
-                        System.out.println("something is amiss?");
+                        Log.i(TAG, "something is amiss?");
                     }
                     int ppsIndex = 0;
                     while (!(spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x00 && spsPpsBuffer.get() == 0x01)) {
@@ -104,6 +118,10 @@ public class AvcEncoder extends Encoder {
     public boolean close() {
         mediaCodec.release();
         return true;
+    }
+
+    public void setOnEncodedFrameListener(EncodedFrameListener listener) {
+        frameListener = listener;
     }
 
 }

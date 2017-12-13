@@ -10,6 +10,8 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
@@ -26,7 +28,7 @@ import java.util.concurrent.ArrayBlockingQueue;
  * Created by victor on 05.11.17.
  */
 
-public class CameraHelper {
+public class CameraHelper implements EncodedFrameListener {
     private static final String TAG = CameraHelper.class.getSimpleName();
     private String id;
     private CameraDevice device;
@@ -38,12 +40,17 @@ public class CameraHelper {
     private Handler handler;
     private CameraCaptureSession session;
     private Queue<Frame> queue;
+    private Queue<Frame> encoded;
+    private boolean encodeStarted;
+    private AvcEncoder encoder;
 
     public CameraHelper(CameraManager manager, String idCamera) {
         this.id = idCamera;
         this.manager = manager;
         this.device = null;
         queue = new ArrayBlockingQueue<Frame>(30, true);
+        encoded = new ArrayBlockingQueue<Frame>(30, true);
+        encodeStarted = false;
     }
 
     public boolean isOpened() {
@@ -56,12 +63,25 @@ public class CameraHelper {
         this.height = height;
         try {
             manager.openCamera(id, cdc, null);
+            encoder = new AvcEncoder();
+            encoder.addParameter(MediaFormat.KEY_MIME, "video/avc");
+            encoder.addParameter(MediaFormat.KEY_BIT_RATE, 1500000);
+            encoder.addParameter(MediaFormat.KEY_FRAME_RATE, 30);
+            encoder.addParameter(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
+            encoder.addParameter(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+            encoder.setOnEncodedFrameListener(this);
+            if (encoder.open()) encoder.start();
+            else throw new IllegalCodecException();
+        } catch (IllegalCodecException e) {
+            e.printStackTrace();
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
 
     public void close() {
+        encoder.stop();
+        encoder.close();
         if (device != null) {
             device.close();
             device = null;
@@ -94,12 +114,10 @@ public class CameraHelper {
                     CameraHelper.this.session = session;
                     try {
                         CameraHelper.this.session.setRepeatingRequest(builder.build(), null, null);
-
                     } catch (CameraAccessException ex) {
                         ex.printStackTrace();
                     }
                 }
-
                 @Override
                 public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
@@ -111,10 +129,20 @@ public class CameraHelper {
         }
     }
 
-    public Frame pop() {
-        return queue.poll();
+    private void encode() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Frame frame = queue.poll();
+                encoder.encode(frame.getData());
+            }
+        });
     }
 
+    @Override
+    public void onEncoded(byte[] data, int offset, int lenght) {
+        encoded.add(new Frame(data));
+    }
     private ImageReader.OnImageAvailableListener iaListener = new ImageReader.OnImageAvailableListener() {
         @Override
         public void onImageAvailable(final ImageReader reader) {
@@ -137,8 +165,9 @@ public class CameraHelper {
                                 bufferY.get(dataYUV, 0, lengthY);
                                 bufferU.get(dataYUV, lengthY, lengthU);
                                 bufferV.get(dataYUV, lengthY + lengthU, lengthV);
+                                queue.add(new Frame(dataYUV));
+                                encode();
                             }
-
                         }
 
                     } catch (IllegalStateException ex) {
@@ -150,6 +179,7 @@ public class CameraHelper {
             });
         }
     };
+
     private CameraDevice.StateCallback cdc = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
