@@ -1,23 +1,24 @@
 package com.placelook.camera;
 
-import java.util.Arrays;
-
 /**
- * Created by victor on 10.12.17.
+ * Created by victor on 24.12.17.
  */
 
 public class Frame {
     private byte[] data;
 
+    public Frame() {
+        data = null;
+    }
+
     public Frame(byte[] data) {
-        this.data = data.clone();
+        this.data = new byte[data.length];
+        System.arraycopy(data, 0, this.data, 0, data.length);
     }
 
     public byte[] getData() {
-        return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = Arrays.copyOf(data, data.length);
+        byte[] result = new byte[this.data.length];
+        System.arraycopy(this.data, 0, result, 0, this.data.length);
+        return result;
     }
 }

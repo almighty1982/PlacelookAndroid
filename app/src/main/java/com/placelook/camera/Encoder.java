@@ -1,5 +1,9 @@
 package com.placelook.camera;
 
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
+import android.os.Build;
+
 import com.placelook.util.Parameter;
 
 import java.util.ArrayList;
@@ -66,4 +70,32 @@ public abstract class Encoder {
         throw new UndefinedImportantParameterException();
     }
 
+    public static int calcBitRate(int frameRate, int width, int height) {
+        final int bitrate = (int) (0.25f * frameRate * width * height);
+        return bitrate;
+    }
+
+    public static int checkColorFormat(String mime) {
+        if (Build.MODEL.equals("HUAWEI P6-C00")) {
+            return MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+        }
+        MediaCodecInfo[] codecList = new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos();
+        for (MediaCodecInfo info : codecList) {
+            if (info.isEncoder()) {
+                String[] types = info.getSupportedTypes();
+                for (String type : types) {
+                    if (type.equals(mime)) {
+                        MediaCodecInfo.CodecCapabilities c = info.getCapabilitiesForType(type);
+                        for (int format : c.colorFormats) {
+                            if (format == MediaCodecInfo.CodecCapabilities
+                                    .COLOR_FormatYUV420Flexible) {
+                                return MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+    }
 }

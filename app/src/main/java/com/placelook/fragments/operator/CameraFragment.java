@@ -122,7 +122,7 @@ public class CameraFragment extends BaseFragment {
         @Override
         protected void onPostExecute(CameraHelper h) {
             if (helper != null) {
-                helper.open(1920, 1080);
+                helper.open(640, 480);
             } else {
                 Log.e(TAG, "Camera helper not initialized");
             }
